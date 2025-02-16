@@ -37,8 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'song.apps.SongConfig',
+    
+    'song.apps.SongConfig',  # Из ветки "Pavel"
+    'concerts',  # Из ветки "main"
     'rest_framework',
     'drf_spectacular_sidecar',
     'drf_spectacular',

@@ -1,12 +1,17 @@
 from django.contrib import admin
-from django.urls import include
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django.urls import path, include
-
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('schema/', SpectacularAPIView.as_view(), name='schema'),
-    path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docks"),
-    path("/", include("song.urls")),
+    
+    # Подключаем маршруты из разных частей проекта
+    path("api/", include("concerts.urls")),  # Из ветки "main"
+    path("api/song/", include("song.urls")),  # Из ветки "Pavel"
+    
+    # Документация API
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
 ]
+
+
