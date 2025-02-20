@@ -39,7 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "drf_spectacular",
+    'clips',  # <-- Добавь сюда свои приложения
+    'concerts',
     'merch',
+    'song',
 ]
 
 MIDDLEWARE = [
