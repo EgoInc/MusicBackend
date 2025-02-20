@@ -6,15 +6,8 @@ from rest_framework.views import APIView
 from .serializers import SongSerializer
 
 
-class SongListView(APIView):
-    @extend_schema(
-        summary="Получить список всех песен",
-        description="Возвращает список всех песен в базе данных.",
-        responses={status.HTTP_200_OK: SongSerializer(many=True)},
-    )
-    def get(self, request):
-        # Заглушка данных TODO: сделать обращение к базе
-        songs = [
+# Заглушка данных
+songs = [
             {
                 "song_id": 1,
                 "title": "Love Sosa",
@@ -30,6 +23,16 @@ class SongListView(APIView):
                 "yandex_music_link": "https//yandex..." 
             }
         ]
+
+
+class SongListView(APIView):
+    @extend_schema(
+        summary="Получить список всех песен",
+        description="Возвращает список всех песен в базе данных.",
+        responses={status.HTTP_200_OK: SongSerializer(many=True)},
+    )
+    def get(self, request):
+        #TODO: сделать обращение к базе
         serializer = SongSerializer(songs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)  
     
@@ -54,13 +57,6 @@ class SongDetailView(APIView):
         responses={status.HTTP_200_OK: SongSerializer},
     )
     def put(self, request, song_id):
-        song = {
-            "song_id": song_id,
-            "title": "Just Wanna Rock",
-            "cover": "http://example/new_cover.jpg",
-            "year": 2021,
-            "yandex_music_link": "https://music.yandex.ru..."
-        }
         serializer = SongSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         # Заглушка данных TODO: сделать обработку запроса        
