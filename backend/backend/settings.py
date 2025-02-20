@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "drf_spectacular",
     'merch',
+    'clips.apps.ClipsConfig',
+    'concerts',
+    'song'
 ]
 
 MIDDLEWARE = [

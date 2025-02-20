@@ -9,3 +9,6 @@ class Song(models.Model):
 
     def __str__(self):
         return f"Песня {self.title} (ID: {self.id}) выпущена в {self.date_of_birth} году. Cлушать на ЯндексМузыке - {self.yandex_music_link}"
+
+    class Meta:
+        app_label = 'song'
