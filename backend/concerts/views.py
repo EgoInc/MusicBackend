@@ -3,6 +3,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from .serializers import ConcertSerializer
+from .models import Concert
+from django.shortcuts import get_object_or_404
+
+
 
 
 class ConcertListView(APIView):
@@ -12,11 +16,7 @@ class ConcertListView(APIView):
         responses={status.HTTP_200_OK: ConcertSerializer(many=True)},
     )
     def get(self, request):
-        # Заглушка данных TODO: сделать обращение к базе
-        concerts = [
-            {"id": 1, "city": "Москва", "date": "2024-05-10", "status": "Запланирован", "ticket_link": "https://example.com/tickets/1"},
-            {"id": 2, "city": "Санкт-Петербург", "date": "2024-06-15", "status": "Продан", "ticket_link": "https://example.com/tickets/2"},
-        ]
+        concerts = Concert.objects.all()
         serializer = ConcertSerializer(concerts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -27,11 +27,11 @@ class ConcertListView(APIView):
         responses={status.HTTP_201_CREATED: ConcertSerializer},
     )
     def post(self, request):
-        # Заглушка данных TODO: сделать сохранение в базу
-        new_concert = request.data
-        new_concert["id"] = 3
-        serializer = ConcertSerializer(new_concert)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer = ConcertSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ConcertDetailView(APIView):
@@ -41,8 +41,7 @@ class ConcertDetailView(APIView):
         responses={status.HTTP_200_OK: ConcertSerializer, status.HTTP_404_NOT_FOUND: "Концерт не найден"},
     )
     def get(self, request, concert_id):
-        # Заглушка данных TODO: сделать обращение к базе
-        concert = {"id": concert_id, "city": "Москва", "date": "2024-05-10", "status": "Запланирован", "ticket_link": "https://example.com/tickets/1"}
+        concert = get_object_or_404(Concert, pk=concert_id)
         serializer = ConcertSerializer(concert)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -53,11 +52,12 @@ class ConcertDetailView(APIView):
         responses={status.HTTP_200_OK: ConcertSerializer, status.HTTP_404_NOT_FOUND: "Концерт не найден"},
     )
     def put(self, request, concert_id):
-        # Заглушка данных TODO: сделать обновление в базе
-        updated_concert = request.data
-        updated_concert["id"] = concert_id
-        serializer = ConcertSerializer(updated_concert)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        concert = get_object_or_404(Concert, pk=concert_id)
+        serializer = ConcertSerializer(concert, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
         summary="Частично обновить концерт (PATCH)",
@@ -66,11 +66,12 @@ class ConcertDetailView(APIView):
         responses={status.HTTP_200_OK: ConcertSerializer, status.HTTP_404_NOT_FOUND: "Концерт не найден"},
     )
     def patch(self, request, concert_id):
-        # Заглушка данных TODO: сделать частичное обновление в базе
-        updated_fields = request.data
-        updated_fields["id"] = concert_id
-        serializer = ConcertSerializer(updated_fields, partial=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        concert = get_object_or_404(Concert, pk=concert_id)
+        serializer = ConcertSerializer(concert, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
         summary="Удалить концерт",
@@ -78,5 +79,6 @@ class ConcertDetailView(APIView):
         responses={status.HTTP_204_NO_CONTENT: "Концерт успешно удален", status.HTTP_404_NOT_FOUND: "Концерт не найден"},
     )
     def delete(self, request, concert_id):
-        # Заглушка данных TODO: сделать удаление из базы
-        return Response({"message": f"Концерт с ID {concert_id} удален"}, status=status.HTTP_204_NO_CONTENT)
+        concert = get_object_or_404(Concert, pk=concert_id)
+        concert.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
