@@ -1,7 +1,7 @@
 from django.db import models
 
 class Song(models.Model):
-    song_id = models.IntegerField(primary_key=True)
+    id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=255)
     cover = models.CharField(max_length=255)
     year = models.IntegerField()

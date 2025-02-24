@@ -85,7 +85,7 @@ DATABASES = {
         'NAME': 'test',  # Имя базы данных
         'USER': 'postgres',
         'PASSWORD': '1',
-        'HOST': 'localhost',  # Обычно localhost
+        'HOST': 'db',
         'PORT': '5432',  # Порт PostgreSQL (стандартный 5432)
     }
 }
