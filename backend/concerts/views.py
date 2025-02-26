@@ -1,15 +1,16 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAdminUser, AllowAny
 from drf_spectacular.utils import extend_schema
+from django.shortcuts import get_object_or_404
 from .serializers import ConcertSerializer
 from .models import Concert
-from django.shortcuts import get_object_or_404
-
-
 
 
 class ConcertListView(APIView):
+    permission_classes = [AllowAny]
+
     @extend_schema(
         summary="Получить список концертов",
         description="Возвращает список всех концертов с датой, городом, статусом и ссылкой на билеты.",
@@ -27,6 +28,8 @@ class ConcertListView(APIView):
         responses={status.HTTP_201_CREATED: ConcertSerializer},
     )
     def post(self, request):
+        if not request.user.is_staff:  # Проверяем, является ли пользователь админом
+            return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = ConcertSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -35,6 +38,8 @@ class ConcertListView(APIView):
 
 
 class ConcertDetailView(APIView):
+    permission_classes = [AllowAny]
+
     @extend_schema(
         summary="Получить информацию о концерте",
         description="Возвращает данные концерта по его ID.",
@@ -52,6 +57,8 @@ class ConcertDetailView(APIView):
         responses={status.HTTP_200_OK: ConcertSerializer, status.HTTP_404_NOT_FOUND: "Концерт не найден"},
     )
     def put(self, request, concert_id):
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         concert = get_object_or_404(Concert, pk=concert_id)
         serializer = ConcertSerializer(concert, data=request.data)
         if serializer.is_valid():
@@ -66,6 +73,8 @@ class ConcertDetailView(APIView):
         responses={status.HTTP_200_OK: ConcertSerializer, status.HTTP_404_NOT_FOUND: "Концерт не найден"},
     )
     def patch(self, request, concert_id):
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         concert = get_object_or_404(Concert, pk=concert_id)
         serializer = ConcertSerializer(concert, data=request.data, partial=True)
         if serializer.is_valid():
@@ -79,6 +88,8 @@ class ConcertDetailView(APIView):
         responses={status.HTTP_204_NO_CONTENT: "Концерт успешно удален", status.HTTP_404_NOT_FOUND: "Концерт не найден"},
     )
     def delete(self, request, concert_id):
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         concert = get_object_or_404(Concert, pk=concert_id)
         concert.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
