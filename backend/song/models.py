@@ -1,11 +1,22 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+import datetime
+
 
 class Song(models.Model):
-    id = models.IntegerField(primary_key=True)
-    title = models.CharField(max_length=255)
-    cover = models.CharField(max_length=255)
-    year = models.IntegerField()
-    yandex_music_link = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, verbose_name="Название")
+    cover = models.URLField(verbose_name="Обложка")
+    year = models.IntegerField(
+        verbose_name="Год выпуска",
+        validators=[
+            MinValueValidator(1900),
+            MaxValueValidator(datetime.date.today().year)
+        ]
+    )
+    yandex_music_link = models.URLField(verbose_name="Ссылка на трек в Яндекс Музыке")
+
+    class Meta:
+        app_label = 'song'
 
     def __str__(self):
-        return f"Песня {self.title} (ID: {self.id}) выпущена в {self.date_of_birth} году. Cлушать на ЯндексМузыке - {self.yandex_music_link}"
+        return self.title
