@@ -9,9 +9,9 @@ services:
       POSTGRES_PASSWORD: 1
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - "5434:5432"
     networks:
       - backend_network
 
