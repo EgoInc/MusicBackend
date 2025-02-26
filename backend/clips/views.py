@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
@@ -16,6 +16,7 @@ class ClipListView(APIView):
         serializer = ClipSerializer(clips, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    permission_classes = [permissions.IsAdminUser]
     @extend_schema(
         summary="Добавить новый клип",
         description="Создает новый клип в базе данных.",
@@ -43,6 +44,7 @@ class ClipDetailView(APIView):
         except Clip.DoesNotExist:
             return Response({"error": "Клип не найден"}, status=status.HTTP_404_NOT_FOUND)
 
+    permission_classes = [permissions.IsAdminUser]
     @extend_schema(
         summary="Обновить клип",
         description="Изменяет данные клипа по ID в базе данных.",
