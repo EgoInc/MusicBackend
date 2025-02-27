@@ -7,7 +7,6 @@ from .models import Merch
 from django.shortcuts import get_object_or_404
 
 class MerchListView(APIView):
-    permission_classes = [permissions.AllowAny]
     @extend_schema(
         summary="Получить список товаров",
         description="Возвращает список всех товаров с возможностью фильтрации по категории, размеру и сортировки по цене.",
@@ -18,7 +17,6 @@ class MerchListView(APIView):
         ],
         responses={status.HTTP_200_OK: MerchSerializer(many=True)},
     )
-    @permission_classes([permissions.AllowAny])
     def get(self, request):
         queryset = Merch.objects.all()
 
@@ -55,13 +53,11 @@ class MerchListView(APIView):
 
 
 class MerchDetailView(APIView):
-    permission_classes = [permissions.AllowAny]
     @extend_schema(
         summary="Получить информацию о товаре",
         description="Возвращает полную информацию о товаре по его ID.",
         responses={status.HTTP_200_OK: MerchSerializer, status.HTTP_404_NOT_FOUND: "Товар не найден"},
     )
-    @permission_classes([permissions.AllowAny])
     def get(self, request, merch_id):
         merch = get_object_or_404(Merch, pk=merch_id)
         serializer = MerchSerializer(merch)
