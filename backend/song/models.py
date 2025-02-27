@@ -4,6 +4,7 @@ import datetime
 
 
 class Song(models.Model):
+    id = models.BigAutoField(primary_key=True, editable=False)
     title = models.CharField(max_length=255, verbose_name="Название")
     cover = models.URLField(verbose_name="Обложка")
     year = models.IntegerField(
