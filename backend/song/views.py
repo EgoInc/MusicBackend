@@ -4,9 +4,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Song
 from .serializers import SongSerializer
+from rest_framework.permissions import IsAdminUser, AllowAny
+from rest_framework.decorators import permission_classes 
 
 
 class SongListView(APIView):
+    permission_classes = [AllowAny]
     @extend_schema(
         summary="Получить все песни",
         description="Возвращает список всех песен из БД.",
@@ -24,6 +27,8 @@ class SongListView(APIView):
         responses={201: SongSerializer}
     )
     def post(self, request):
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = SongSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -42,7 +47,7 @@ class SongDetailView(APIView):
             serializer = SongSerializer(song)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except song.DoesNotExist:
-            return Response({"response": "Песня не найденф"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"response": "Песня не найдена"}, status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
         summary="Обновить информауию о песне",
@@ -51,6 +56,8 @@ class SongDetailView(APIView):
         responses={200: SongSerializer}
     )
     def put(self, request, song_id):
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         try:
             song = Song.objects.get(id=song_id)
             serializer = SongSerializer(song, data=request.data)
@@ -67,9 +74,11 @@ class SongDetailView(APIView):
         responses={204: "Пеня удалена"}
     )
     def delete(self, request, song_id):
+        if not request.user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         try:
             song = Song.objects.get(id=song_id)
             song.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({"response": "Песня удалена"}, status=status.HTTP_204_NO_CONTENT)
         except song.DoesNotExist:
             return Response({"response": "Пеня не найдена"}, status=status.HTTP_404_NOT_FOUND)
