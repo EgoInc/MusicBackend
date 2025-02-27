@@ -2,70 +2,83 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from .models import Song
 from .serializers import SongSerializer
-
-
-# Заглушка данных
-songs = [
-            {
-                "song_id": 1,
-                "title": "Love Sosa",
-                "cover": "http://example/new_cover.jpg",
-                "year": 2018,
-                "yandex_music_link": "https//yandex..." 
-            },
-            {
-                "song_id": 2,
-                "title": "Type Shit",
-                "cover": "http://example/new_cover.jpg",
-                "year": 2023,
-                "yandex_music_link": "https//yandex..." 
-            }
-        ]
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import permission_classes 
 
 
 class SongListView(APIView):
+    permission_classes = [AllowAny]
     @extend_schema(
-        summary="Получить список всех песен",
-        description="Возвращает список всех песен в базе данных.",
-        responses={status.HTTP_200_OK: SongSerializer(many=True)},
+        summary="Получить все песни",
+        description="Возвращает список всех песен из БД.",
+        responses={200: SongSerializer(many=True)}
     )
     def get(self, request):
-        #TODO: сделать обращение к базе
+        songs = Song.objects.all()
         serializer = SongSerializer(songs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)  
-    
-    @extend_schema(
-        summary="Добавить песню",
-        description="Позволяет добавить новую песню в базу данных.",
-        request=SongSerializer,
-        responses={status.HTTP_201_CREATED: SongSerializer},
-    )
-    def post(self, request):
-        serializer = SongSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        # Заглушка данных TODO: сделать обработку запроса        
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class SongDetailView(APIView):
-    @extend_schema(
-        summary="Изменить песню",
-        description="Позволяет изменить данные существующей песни по её ID.",
-        request=SongSerializer,
-        responses={status.HTTP_200_OK: SongSerializer},
-    )
-    def put(self, request, song_id):
-        serializer = SongSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        # Заглушка данных TODO: сделать обработку запроса        
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
+        summary="Добавить новую песню",
+        description="Добавляет информацию о новой песне в БД.",
+        request=SongSerializer,
+        responses={201: SongSerializer}
+    )
+    def post(self, request):
+        if not request.user.is_staff:
+            return Response({"response": "Admin priveleges required"}, status=status.HTTP_403_FORBIDDEN)
+        serializer = SongSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SongDetailView(APIView):
+    @extend_schema(
+        summary="Получить песню",
+        description="Возвращает песню из БД по ID.",
+        responses={200: SongSerializer}
+    )
+    def get(self, request, song_id):
+        try:
+            song = Song.objects.get(id=song_id)
+            serializer = SongSerializer(song)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Song.DoesNotExist:
+            return Response({"response": "Песня не найдена"}, status=status.HTTP_404_NOT_FOUND)
+
+    @extend_schema(
+        summary="Обновить информауию о песне",
+        description="Изменяет данные песни в БД по ее ID.",
+        request=SongSerializer,
+        responses={200: SongSerializer}
+    )
+    def put(self, request, song_id):
+        if not request.user.is_staff:
+            return Response({"response": "Admin priveleges required"}, status=status.HTTP_403_FORBIDDEN)        
+        try:
+            song = Song.objects.get(id=song_id)
+            serializer = SongSerializer(song, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Song.DoesNotExist:
+            return Response({"response": "Пеня не найдена"}, status=status.HTTP_404_NOT_FOUND)
+
+    @extend_schema(
         summary="Удалить песню",
-        description="Удаляет песню по её ID.",
-        responses={status.HTTP_204_NO_CONTENT: None},
+        description="Удаляет песню из БД по ее ID.",
+        responses={204: "Пеня удалена"}
     )
     def delete(self, request, song_id):
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if not request.user.is_staff:
+            return Response({"response": "Admin priveleges required"}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            song = Song.objects.get(id=song_id)
+            song.delete()
+            return Response({"response": "Песня удалена"}, status=status.HTTP_204_NO_CONTENT)
+        except Song.DoesNotExist:
+            return Response({"response": "Пеня не найдена"}, status=status.HTTP_404_NOT_FOUND)
