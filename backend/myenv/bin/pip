@@ -1,4 +1,4 @@
-#!/Users/sofaberezina/MusicBackend/myenv/bin/python3
+#!/Users/pavelpolyarus/Desktop/MusicBackend/backend/myenv/bin/python3.13
 # -*- coding: utf-8 -*-
 import re
 import sys
